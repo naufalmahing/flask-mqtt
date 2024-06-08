@@ -1,9 +1,22 @@
+# test files
 tes.ipynb
 tes.py
-
-env
-__pycache__
-
-
 send_request.py
+
+# environment file
+.env
+
+# log files
+accesslog.log
+errorlog.log
+supervisord.log
+
+# generated files
+celerybeat-schedule
+
+# unneeded folders
+env
+ubuntu_env
+__pycache__
 templates
+.vscode
