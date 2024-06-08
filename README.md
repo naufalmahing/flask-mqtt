@@ -35,3 +35,7 @@ Implementing MQTT I create a form to connect and subscribe, so there won't be to
 Just explaining, you need to use the same topic to connect.
 
 Also to simulate realtime data, I use random int and insert to database every 5 second. To change the interval go to main.py in flask project and find .add_job there you can change 'seconds' parameter to minutes, hours, etc. Check apscheduler package documentation.
+
+
+# Errors
+Alert 80 error when connecting to mongodb means you need to add ip address to mongodb cloud
