@@ -36,8 +36,10 @@ def celery_init_app(app: Flask) -> Celery:
 
 app = create_app()
 
+# init mongo
 mongo = PyMongo(app)
 
+# init celery with upstash as broker
 app.config.from_mapping(
     CELERY=dict(
         broker_url=app.config['UPSTASH_URI'],
