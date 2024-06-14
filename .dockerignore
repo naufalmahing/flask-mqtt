@@ -1,0 +1,16 @@
+/env
+/ubuntu_env
+
+/.vscode
+
+README.md
+tes.ipynb
+tes.py
+accesslog.log
+celerybeat-schedule
+errorlog.log
+send_request.py
+tes.py
+
+/templates
+/__pycache__

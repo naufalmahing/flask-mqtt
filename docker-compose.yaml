@@ -1,0 +1,18 @@
+services:
+  flaskapp:
+    build: './'
+    ports:
+      - 8000:8000
+      - 35729:35729
+    develop:
+      watch:
+      - path: ./pwa
+        target: /usr/src/app
+        action: sync
+    links: 
+     - redis
+
+  redis:
+    image: 'redis:4-alpine'
+    ports:
+      - '6379:6379'
