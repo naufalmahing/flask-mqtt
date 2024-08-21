@@ -3,6 +3,12 @@ tes.ipynb
 tes.py
 send_request.py
 
+# temp files
+temp.txt
+
+# test folder
+tes
+
 # environment file
 .env
 
@@ -16,7 +22,7 @@ celerybeat-schedule
 
 # unneeded folders
 env
-ubuntu_env
+u_env
 __pycache__
 templates
 .vscode

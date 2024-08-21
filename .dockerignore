@@ -1,5 +1,7 @@
 /env
-/ubuntu_env
+/u_env
+
+/tes
 
 /.vscode
 
@@ -10,7 +12,8 @@ accesslog.log
 celerybeat-schedule
 errorlog.log
 send_request.py
-tes.py
+
+temp.txt
 
 /templates
 /__pycache__
