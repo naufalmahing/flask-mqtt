@@ -4,6 +4,9 @@ WORKDIR /usr/src/app
 # install supervisord
 RUN apt-get update && apt-get install -y supervisor
 
+# update libaom package
+RUN apt-get install libaom3
+
 # copy requirements and install (so that changes to files do not mean rebuild cannot be cached)
 COPY requirements.txt /usr/src/app
 RUN pip install -r requirements.txt
