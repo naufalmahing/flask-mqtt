@@ -18,7 +18,7 @@ errorlog.log
 supervisord.log
 
 # generated files
-celerybeat-schedule
+# celerybeat-schedule
 
 # unneeded folders
 env
