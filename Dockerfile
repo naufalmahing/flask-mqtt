@@ -26,13 +26,14 @@ RUN adduser \
 
 EXPOSE 8000
 
-RUN chown -R choreo /usr/src/app/
+RUN chown -R choreo /usr/src/app
 
 # switch user
 USER 10014
 
 # run supervisord
 WORKDIR /usr/src/app/pwa
+RUN pwd
 CMD /usr/bin/supervisord -c /usr/src/app/supervisord.conf
 # CMD gunicorn main:app --bind 0.0.0.0:8000 
 # CMD python3 main.py
