@@ -26,6 +26,9 @@ RUN adduser \
 
 EXPOSE 8000
 
+# change folder permission
+RUN chmod -R 744 /usr/src/app
+# change owner
 RUN chown -R choreo /usr/src/app
 
 # switch user
