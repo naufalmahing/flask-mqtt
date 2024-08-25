@@ -19,7 +19,6 @@ RUN adduser \
     --disabled-password \
     --gecos "" \
     --home "/nonexistent" \
-    --shell "/sbin/nologin" \
     --no-create-home \
     --uid 10014 \
     "choreo"
@@ -27,7 +26,7 @@ RUN adduser \
 EXPOSE 8000
 
 # change folder permission
-RUN chmod -R 744 /usr/src/app
+RUN chmod -R 755 /usr/src/app
 # change owner
 RUN chown -R choreo /usr/src/app
 
