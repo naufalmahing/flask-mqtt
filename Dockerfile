@@ -19,6 +19,7 @@ RUN adduser \
     --disabled-password \
     --gecos "" \
     --home "/nonexistent" \
+    --shell "/sbin/nologin" \
     --no-create-home \
     --uid 10014 \
     "choreo"
