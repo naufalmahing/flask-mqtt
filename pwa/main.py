@@ -77,14 +77,14 @@ def return_something():
 
 """get current user"""
 @app.route('/get-user')
-# @cross_origin(supports_credentials=True)
+@cross_origin(supports_credentials=True)
 def get_user():
     user_id = session.get('user_id', 'no user logged in')
     return {'msg': session.get('user_id', 'no user logged'), 'code': 200 if user_id != 'no user logged in' else 401}
     
 """function called by react to verify credential"""
 @app.route('/verify', methods=['POST'])
-# @cross_origin(supports_credentials=True)
+@cross_origin(supports_credentials=True)
 def verify():    
     data = request.json
     if 'username' and 'password' not in data:
@@ -135,7 +135,7 @@ def register():
 
 """function to logout and clear session"""
 @app.route('/logout')
-# @cross_origin(supports_credentials=True)
+@cross_origin(supports_credentials=True)
 def logout():
     session.clear()
     return {'msg': 'logged out', 'code': 200}
@@ -422,7 +422,7 @@ def pm():
     
 """function to initialize starting data for linechart on front end"""
 @app.route('/get-data')
-# @cross_origin(supports_credentials=True)
+@cross_origin(supports_credentials=True)
 def get_data():
     """
     find collection
