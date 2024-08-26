@@ -60,7 +60,8 @@ app.config['CELERY_TIMEZONE'] = 'UTC'
 celery_app = celery_init_app(app)
 
 # init session
-app.config['SESSION_REDIS'] = Redis(host='redis', port=6379)
+app.config['SESSION_REDIS'] = Redis(host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=False)
+
 app.config['SESSION_TYPE'] = 'redis'
 Session(app)
 
@@ -105,7 +106,7 @@ def verify():
     valid = bcrypt.check_password_hash(res['password'], password)
     if not valid:
         return {'msg': 'incorrect username and password'}
-    print('corret username and password')
+    print('correct username and password')
 
     # regenerate session to mitigate session fixation
     app.session_interface.regenerate(session)
