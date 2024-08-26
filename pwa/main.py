@@ -77,14 +77,14 @@ def return_something():
 
 """get current user"""
 @app.route('/get-user')
-@cross_origin(supports_credentials=True)
+# @cross_origin(supports_credentials=True)
 def get_user():
     user_id = session.get('user_id', 'no user logged in')
-    return {'msg': session.get('user_id', 'no user logged'), 'code': 200 if user_id != 'no user logged in' else 401}
+    return {'msg': user_id, 'code': 200 if user_id != 'no user logged in' else 401}
     
 """function called by react to verify credential"""
 @app.route('/verify', methods=['POST'])
-@cross_origin(supports_credentials=True)
+# @cross_origin(supports_credentials=True)
 def verify():    
     data = request.json
     if 'username' and 'password' not in data:
@@ -135,7 +135,7 @@ def register():
 
 """function to logout and clear session"""
 @app.route('/logout')
-@cross_origin(supports_credentials=True)
+# @cross_origin(supports_credentials=True)
 def logout():
     session.clear()
     return {'msg': 'logged out', 'code': 200}
@@ -185,7 +185,8 @@ def handle_mqtt_message(client, userdata, message):
        topic=message.topic,
        payload=message.payload.decode()
   )
-   print('Received message on topic: {topic} with payload: {payload}'.format(**data))
+#    print('Received message on topic: {topic} with payload: {payload}'.format(**data))
+   print('Received message on topic: {topic} with payload')
 
 from flask_mqtt import MQTT_LOG_ERR, MQTT_LOG_DEBUG, MQTT_LOG_INFO, MQTT_LOG_NOTICE, MQTT_LOG_WARNING
 
@@ -422,7 +423,7 @@ def pm():
     
 """function to initialize starting data for linechart on front end"""
 @app.route('/get-data')
-@cross_origin(supports_credentials=True)
+# @cross_origin(supports_credentials=True)
 def get_data():
     """
     find collection
@@ -431,9 +432,9 @@ def get_data():
     """
     res = mongo.db.humidity.find({}, {"_id": 0, "timedate": 1, "humidity": 1}).sort('_id', -1).limit(10)
     list_res = list(res)[::-1]
-    print('list res', list_res)
+    # print('list res', list_res)
     final = json.dumps(list_res, indent=2)
-    print('final', final)
+    # print('final', final)
     return final
 
 
