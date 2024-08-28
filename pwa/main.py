@@ -19,7 +19,6 @@ from redis import Redis
 
 from flask_bcrypt import Bcrypt
 
-# TODO: update requirements.txt
 load_dotenv()
 
 def create_app():
@@ -60,13 +59,14 @@ app.config['CELERY_TIMEZONE'] = 'UTC'
 celery_app = celery_init_app(app)
 
 # init session
-app.config['SESSION_REDIS'] = Redis(host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=False)
+app.config['SESSION_REDIS'] = Redis(host='redis', port=6379)
+# app.config['SESSION_REDIS'] = Redis(host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=False)
 
 app.config['SESSION_TYPE'] = 'redis'
 Session(app)
 
 # init cors
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=['http://localhost:3000'])
 
 # init bcrypt
 bcrypt = Bcrypt(app)
@@ -105,13 +105,19 @@ def verify():
     print(res.keys())
     valid = bcrypt.check_password_hash(res['password'], password)
     if not valid:
-        return {'msg': 'incorrect username and password'}
+        return {'msg': 'incorrect username and password', 'code': 401}
     print('correct username and password')
 
-    # regenerate session to mitigate session fixation
-    app.session_interface.regenerate(session)
+    if session:
+        print('there is a session')
+        # regenerate session to mitigate session fixation
+        app.session_interface.regenerate(session)
+    else:
+        print('there isn\'t a session')
+
     # add user id session
     session['user_id'] = username
+    print('added session is ' + session.get('user_id'))
 
     # return res
     return {'data': [username, password], 'code': 200, 'session_id': session.get('user_id')}
