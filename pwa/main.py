@@ -85,7 +85,7 @@ def get_user():
     
 """function called by react to verify credential"""
 @app.route('/verify', methods=['POST'])
-# @cross_origin(supports_credentials=True)
+@cross_origin(supports_credentials=True)
 def verify():    
     data = request.json
     if 'username' and 'password' not in data:
