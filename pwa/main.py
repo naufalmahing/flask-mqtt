@@ -79,8 +79,10 @@ def return_something():
 """update after request handler to fix no control-allow-header credential for preflight request"""
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    if response.method == 'OPTIONS':
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
+
 """get current user"""
 @app.route('/get-user')
 # @cross_origin(supports_credentials=True)
