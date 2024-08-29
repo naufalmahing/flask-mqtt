@@ -66,7 +66,7 @@ app.config['SESSION_TYPE'] = 'redis'
 Session(app)
 
 # init cors
-CORS(app, supports_credentials=True, origins='http://localhost:3000', expose_headers='Access-Control-Allow-Credentials')
+CORS(app, supports_credentials=True, origins=['http://localhost:3000', 'http://192.168.56.1:3000'], expose_headers='Access-Control-Allow-Credentials')
 
 # init bcrypt
 bcrypt = Bcrypt(app)
