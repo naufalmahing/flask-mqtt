@@ -84,7 +84,7 @@ def get_user():
     return {'msg': user_id, 'code': 200 if user_id != 'no user logged in' else 401}
     
 """function called by react to verify credential"""
-@app.route('/verify', methods=['POST'])
+@app.route('/verify', methods=['POST', 'OPTIONS'])
 @cross_origin(supports_credentials=True)
 def verify():    
     data = request.json
