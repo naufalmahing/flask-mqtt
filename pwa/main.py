@@ -76,6 +76,11 @@ def return_something():
     print('this is something')
     return 'this is something'
 
+"""update after request handler to fix no control-allow-header credential for preflight request"""
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 """get current user"""
 @app.route('/get-user')
 # @cross_origin(supports_credentials=True)
@@ -459,4 +464,4 @@ celery_app.conf.beat_schedule = {
     # pass
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000, use_reloader=False)
+    app.run(debug=True, host='0.0.0.0', port=8000, use_reloader=False, threaded=True)
