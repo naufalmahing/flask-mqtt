@@ -59,8 +59,8 @@ app.config['CELERY_TIMEZONE'] = 'UTC'
 celery_app = celery_init_app(app)
 
 # init session
-app.config['SESSION_REDIS'] = Redis(host='redis', port=6379)
-# app.config['SESSION_REDIS'] = Redis(host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=False)
+# app.config['SESSION_REDIS'] = Redis(host='redis', port=6379)
+app.config['SESSION_REDIS'] = Redis(host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=True)
 
 app.config['SESSION_TYPE'] = 'redis'
 Session(app)
