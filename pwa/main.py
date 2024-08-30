@@ -60,28 +60,31 @@ celery_app = celery_init_app(app)
 
 # init session
 # app.config['SESSION_REDIS'] = Redis(host='redis', port=6379)
-app.config['SESSION_REDIS'] = Redis(host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=True)
+app.config['SESSION_REDIS'] = Redis(
+    host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), 
+    password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=True)
 
 app.config['SESSION_TYPE'] = 'redis'
 Session(app)
 
 # init cors
-CORS(app, supports_credentials=True, origins=['http://localhost:3000', 'http://192.168.56.1:3000'], expose_headers='Access-Control-Allow-Credentials')
+app.config['CORS_SUPPORTS_CREDENTIALS'] = True
+
+CORS(app, supports_credentials=True, origins=[
+    'http://localhost:3000', 'http://192.168.56.1:3000', 'https://46d6da7b-7353-488a-982f-e92bade45d11-dev.e1-us-east-azure.choreoapis.dev/flask-mqtt/backend/v1.0'], 
+    expose_headers='Access-Control-Allow-Credentials')
 
 # init bcrypt
 bcrypt = Bcrypt(app)
 
-@celery_app.task(name='return_something')
-def return_something():
-    print('this is something')
-    return 'this is something'
-
 """update after request handler to fix no control-allow-header credential for preflight request"""
-@app.after_request
-def after_request(response):
-    if response.method == 'OPTIONS':
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
+# @app.after_request
+# def after_request(response):
+#     # if response.method == 'OPTIONS':
+    
+#     response.headers['Access-Control-Allow-Credentials'] = 'true'
+#     response.headers['Connection'] = 'keep-alive'
+#     return response
 
 """get current user"""
 @app.route('/get-user')
