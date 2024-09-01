@@ -37,6 +37,6 @@ USER 10014
 # run supervisord
 WORKDIR /usr/src/app/pwa
 RUN pwd
-CMD /usr/bin/supervisord -c /usr/src/app/supervisord.conf
+CMD /usr/bin/supervisord -c /usr/src/app/supervisord.conf -j /tmp/supervisord.pid
 # CMD gunicor/n main:app --bind 0.0.0.0:8000 
 # CMD python3 main.py
