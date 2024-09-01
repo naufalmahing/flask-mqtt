@@ -80,6 +80,10 @@ bcrypt = Bcrypt(app)
 """update after request handler to fix no control-allow-header credential for preflight request"""
 @app.after_request
 def after_request(response):
+    # if response.method == 'OPTIONS':
+    
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    # response.headers['Connection'] = 'keep-alive'
     return response
 
 """get current user"""
