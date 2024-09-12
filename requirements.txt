@@ -7,3 +7,4 @@ flask-cors
 python-dotenv
 celery[redis]
 flask-session
+flask-jwt-extended

@@ -4,6 +4,9 @@ WORKDIR /usr/src/app
 # install supervisord
 RUN apt-get update && apt-get install -y supervisor
 
+# # install c compiler for uwsgi
+# RUN apt-get install build-essential python3-dev -y
+
 # update libaom package
 RUN apt-get install libaom3
 

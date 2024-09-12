@@ -15,9 +15,17 @@ from celery.signals import worker_ready
 from celery.result import AsyncResult
 
 from flask_session import Session
-from redis import Redis
+from redis import Redis, StrictRedis
 
 from flask_bcrypt import Bcrypt
+
+from flask_jwt_extended import (
+    create_access_token, jwt_required, JWTManager,
+    set_access_cookies, unset_jwt_cookies, get_jwt_identity, verify_jwt_in_request, get_jwt
+)
+from datetime import timedelta
+
+import traceback
 
 load_dotenv()
 
@@ -43,6 +51,18 @@ def celery_init_app(app: Flask) -> Celery:
 
 app = create_app()
 
+#init jwt manager
+ACCESS_EXPIRES = timedelta(minutes=15)
+
+app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "json", "query_string"]
+app.config["JWT_COOKIE_SECURE"] = False
+app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
+
+jwt = JWTManager(app)
+
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
 # init mongo
 mongo = PyMongo(app)
 
@@ -59,20 +79,34 @@ app.config['CELERY_TIMEZONE'] = 'UTC'
 celery_app = celery_init_app(app)
 
 # init session
-# app.config['SESSION_REDIS'] = Redis(host='redis', port=6379)
-app.config['SESSION_REDIS'] = Redis(
-    host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), 
-    password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=True)
+# # app.config['SESSION_REDIS'] = Redis(host='redis', port=6379)
+# app.config['SESSION_REDIS'] = Redis(
+#     host=os.getenv('FLASK_SESSION_HOST'), port=os.getenv('FLASK_SESSION_PORT'), 
+#     password=os.getenv('FLASK_SESSION_PASSWORD'), ssl=True)
 
-app.config['SESSION_TYPE'] = 'redis'
-Session(app)
+# app.config['SESSION_TYPE'] = 'redis'
+# Session(app)
+
+# init jwt redis
+jwt_redis_blocklist = StrictRedis(
+    host=os.getenv('FLASK_SESSION_HOST'), 
+    port=os.getenv('FLASK_SESSION_PORT'),     
+    password=os.getenv('FLASK_SESSION_PASSWORD'), 
+    ssl=True, db=0, decode_responses=True
+)
 
 # init cors
-app.config['CORS_SUPPORTS_CREDENTIALS'] = True
+# app.config['CORS_SUPPORTS_CREDENTIALS'] = True
 
-CORS(app, supports_credentials=True, origins=[
-    'http://localhost:3000', 'http://192.168.56.1:3000', 'https://46d6da7b-7353-488a-982f-e92bade45d11-dev.e1-us-east-azure.choreoapis.dev/flask-mqtt/backend/v1.0'], 
-    expose_headers='Access-Control-Allow-Credentials')
+CORS(
+    app, supports_credentials=False, 
+    origins=[
+        'http://localhost:3000', 
+        'http://192.168.56.1:3000', 
+        'https://46d6da7b-7353-488a-982f-e92bade45d11-dev.e1-us-east-azure.choreoapis.dev/flask-mqtt/backend/v1.0'
+    ], 
+    # expose_headers='Access-Control-Allow-Credentials'
+)
 
 # init bcrypt
 bcrypt = Bcrypt(app)
@@ -80,22 +114,25 @@ bcrypt = Bcrypt(app)
 """update after request handler to fix no control-allow-header credential for preflight request"""
 @app.after_request
 def after_request(response):
-    # if response.method == 'OPTIONS':
-    
-    response.headers['Access-Control-Allow-Credentials'] = 'true'
-    # response.headers['Connection'] = 'keep-alive'
+    # refresh acccess token
+
     return response
 
 """get current user"""
-@app.route('/get-user')
+@app.route('/get-user', methods=['POST'])
 # @cross_origin(supports_credentials=True)
 def get_user():
-    user_id = session.get('user_id', 'no user logged in')
-    return {'msg': user_id, 'code': 200 if user_id != 'no user logged in' else 401}
+    try:
+        return {'code': 200 if verify_jwt_in_request() else 401}    
+    except Exception as error:
+        return {'code': 401, 'msg': traceback.format_exc()}
+    
+    # user_id = session.get('user_id', 'no user logged in')
+    # return {'msg': user_id, 'code': 200 if user_id != 'no user logged in' else 401}
     
 """function called by react to verify credential"""
-@app.route('/verify', methods=['POST', 'OPTIONS'])
-@cross_origin(supports_credentials=True)
+@app.route('/verify', methods=['POST'])
+# @cross_origin(supports_credentials=True)
 def verify():    
     data = request.json
     if 'username' and 'password' not in data:
@@ -113,24 +150,37 @@ def verify():
         
     print(res)
     print(res.keys())
-    valid = bcrypt.check_password_hash(res['password'], password)
+    valid = None
+    
+    try:
+        valid = bcrypt.check_password_hash(res['password'], password)
+    except Exception as error:
+        return {'msg': traceback.format_exc()}
+    
     if not valid:
         return {'msg': 'incorrect username and password', 'code': 401}
     print('correct username and password')
 
-    if session:
-        print('there is a session')
-        # regenerate session to mitigate session fixation
-        app.session_interface.regenerate(session)
-    else:
-        print('there isn\'t a session')
+    # if session:
+    #     print('there is a session')
+    #     # regenerate session to mitigate session fixation
+    #     app.session_interface.regenerate(session)
+    # else:
+    #     print('there isn\'t a session')
 
-    # add user id session
-    session['user_id'] = username
-    print('added session is ' + session.get('user_id'))
+
+    # # add user id session
+    # session['user_id'] = username
+    # print('added session is ' + session.get('user_id'))
 
     # return res
-    return {'data': [username, password], 'code': 200, 'session_id': session.get('user_id')}
+    print(str(res['_id']))
+    return {
+        'data': [username, password], 
+        'code': 200, 
+        'access_token': create_access_token(identity=str(res['_id']))
+        # 'session_id': session.get('user_id')
+    }
 
 
 """function to register user"""
@@ -149,13 +199,28 @@ def register():
 
         return {'msg': 'already taken', 'code': 409}
         
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
+    jti = jwt_payload["jti"]
+    token_in_redis = jwt_redis_blocklist.get(jti)
+    return token_in_redis is not None
 
 """function to logout and clear session"""
-@app.route('/logout')
-# @cross_origin(supports_credentials=True)
+@app.route("/logout", methods=["DELETE"])
+@jwt_required()
 def logout():
-    session.clear()
-    return {'msg': 'logged out', 'code': 200}
+    jti = get_jwt()["jti"]
+    jwt_redis_blocklist.set(jti, "", ex=ACCESS_EXPIRES)
+    return jsonify(msg="Access token revoked")
+
+# 
+# @app.route('/logout', methods=['POST'])
+# # @cross_origin(supports_credentials=True)
+# def logout():
+#     # delete access token
+
+#     # session.clear()
+#     return {'msg': 'logged out', 'code': 200}
     
 """
 Generate random data, save, and push to database
@@ -439,8 +504,9 @@ def pm():
     # return {'code': publish_result[0]}
     
 """function to initialize starting data for linechart on front end"""
-@app.route('/get-data')
+@app.route('/get-data', methods=['POST'])
 # @cross_origin(supports_credentials=True)
+@jwt_required()
 def get_data():
     """
     find collection
@@ -458,7 +524,7 @@ def get_data():
 celery_app.conf.beat_schedule = {
     'sendfool': {
         'task': 'send_mqtt',
-        'schedule': 10,
+        'schedule': 600,
     }
 }
 
